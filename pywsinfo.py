@@ -3,7 +3,7 @@
 #   Website info gathering
 #
 
-# TODO collect WHOIS informatio
+# TODO collect WHOIS information
 # TODO extract meta information from homepage (head, meta)
 # TODO add sitemap.xml support
 # TODO add choice to select different report types about website
@@ -79,7 +79,10 @@ class WebsiteInfo(object):
             resp = self._make_request('GET', robots_url)
             if 'content' in resp:
                 self._details['robots.txt'] = resp['content']
-                
+
+        # check sitemap
+        if 'robots.txt' in self._details:
+            print self._details['robots.txt']                
     
     def report(self):
         ''' website report '''
