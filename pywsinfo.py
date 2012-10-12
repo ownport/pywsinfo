@@ -71,8 +71,8 @@ class WebsiteInfo(object):
         
         content = content.replace('\r', '')
         content = content.replace('\n', '')
-        head = ''.join(re.findall(r'<head>(.+?)</head>', content, re.I))
-        metas = re.findall(r'<meta(.+?)[\/]?>', head, re.I)
+        head = ''.join(re.findall(r'<head(.+?)</head>', content, re.I))
+        metas = re.findall(r'<meta(.+?)[/]?>', head, re.I)
         for meta in metas:
             meta_dict = dict(re.findall(r'(\w+)\s*=\s*"(.+?)"', meta, re.I))
             if 'name' in meta_dict:
