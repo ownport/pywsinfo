@@ -39,6 +39,32 @@ def nslookup(host):
     except:
         return []
 
+
+def parse_html_head(content):
+    ''' parse HTML head, extract keywords & description '''
+    
+    result = dict()
+    
+    content = content.replace('\r', '')
+    content = content.replace('\n', '')
+    # select HEAD section
+    head = ''.join(re.findall(r'<head(.+?)</head>', content, re.I))
+    # extract title information
+    title = ''.join(re.findall(r'<title>(.+?)</title>', content, re.I))
+    if title:
+        result['title'] = title
+    # select meta information: keywords and description
+    metas = re.findall(r'<meta(.+?)[/]?>', head, re.I)
+    for meta in metas:
+        meta_dict = dict(re.findall(r'(\w+)\s*=\s*"(.+?)"', meta, re.I))
+        if 'name' in meta_dict and 'content' in meta_dict:
+            if meta_dict['name'].lower() == 'keywords':
+                result['keywords'] = [c.strip() for c in meta_dict['content'].split(',')]
+            if meta_dict['name'].lower() == 'description':
+                result['description'] = meta_dict['content']
+    return result
+
+
 class WebsiteInfo(object):
     ''' website information '''    
     
@@ -64,24 +90,6 @@ class WebsiteInfo(object):
 
         return result
 
-    def _handle_html_head(self, content):
-        ''' handle HTML head, extract keywords & description '''
-        
-        result = dict()
-        
-        content = content.replace('\r', '')
-        content = content.replace('\n', '')
-        head = ''.join(re.findall(r'<head(.+?)</head>', content, re.I))
-        metas = re.findall(r'<meta(.+?)[/]?>', head, re.I)
-        for meta in metas:
-            meta_dict = dict(re.findall(r'(\w+)\s*=\s*"(.+?)"', meta, re.I))
-            if 'name' in meta_dict:
-                if meta_dict['name'].lower() == 'keywords':
-                    result['keywords'] = [c.strip() for c in meta_dict['content'].split(',')]
-                if meta_dict['name'].lower() == 'description':
-                    result['description'] = meta_dict['content']
-        return result
-    
     def run(self):
         ''' run website info retrieval '''
         
@@ -93,7 +101,7 @@ class WebsiteInfo(object):
             resp = self._make_request('GET', self._details['source_url'])
             for k in resp.keys():
                 if k == 'content':
-                    head_params = self._handle_html_head(resp[k])
+                    head_params = parse_html_head(resp[k])
                     for k in head_params:
                         self._details[k] = head_params[k]
                 else:
