@@ -4,8 +4,8 @@ test-unittest:
 	@ echo '***************************'
 	@ echo '*       Unittests         *'
 	@ echo '***************************'
-	# python tests/test_pywsinfo.py
 	python tests/test_utils.py
+	python tests/test_pywsinfo.py
 	python tests/test_sitemap_parser.py
 
 test-doctest:

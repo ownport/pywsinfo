@@ -26,6 +26,12 @@ class WebSiteUtilsTests(unittest.TestCase):
                 pywsinfo.parse_url(url),  
                 {'source_url': 'https://www.example.com', 'host': 'www.example.com'}
         )
+        url = 'http://localhost:8080'
+        self.assertEqual(
+                pywsinfo.parse_url(url),  
+                {'source_url': 'http://localhost:8080', 'host': 'localhost'}
+        )
+
 
     def test_nsloopup(self):
         

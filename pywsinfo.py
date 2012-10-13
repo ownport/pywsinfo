@@ -30,10 +30,13 @@ REQUESTS_DEFAULTS = {}
 def parse_url(url):  
     ''' parse website url, remove path if exists '''
     url_parts = urlparse.urlparse(url)
-    return {
-            'source_url': urlparse.urlunsplit((url_parts.scheme,url_parts.netloc,'','','')),
-            'host': url_parts.netloc
-    }
+    source_url = urlparse.urlunsplit((url_parts.scheme,url_parts.netloc,'','',''))
+    
+    if ':' in url_parts.netloc:
+        host, port = url_parts.netloc.split(':')
+    else:
+        host = url_parts.netloc
+    return { 'source_url': source_url, 'host': host }
 
 def nslookup(host):
     ''' returns result of DNS lookup '''
