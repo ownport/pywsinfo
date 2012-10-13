@@ -3,6 +3,8 @@
 #   Website info gathering
 #
 
+# TODO add test server
+# TODO change default user agent
 # TODO collect WHOIS information
 # TODO extract meta information from homepage (head, meta)
 # TODO add sitemap.xml support
@@ -19,6 +21,9 @@ import pprint
 import requests
 import urlparse
 import datetime
+
+from gzip import GzipFile 
+from cStringIO import StringIO
 
 # default setting for python-requests
 REQUESTS_DEFAULTS = {}
@@ -38,7 +43,6 @@ def nslookup(host):
         return socket.gethostbyname_ex(host)[2]
     except:
         return []
-
 
 def parse_html_head(content):
     ''' parse HTML head, extract keywords & description '''
@@ -64,6 +68,45 @@ def parse_html_head(content):
                 result['description'] = meta_dict['content']
     return result
 
+class SitemapParser(object):
+    
+    def __init__(self, sitemap):
+        ''' init 
+        
+        sitemap can be as one url or as list of urls to sitemaps
+        '''
+        self._sitemap_urls = list()
+        if isinstance(sitemap, (str,unicode)):
+            self._sitemap_urls.append(sitemap)
+        elif isinstance(sitemap, (list,tuple)):
+            self._sitemap_urls.extend(sitemap)
+        else:
+            raise RuntimeError('Unknow sitemap type: {}'.format(type(sitemap)))
+
+    def _get(self, url):
+        ''' get sitemap, if it compressed -> decompress'''
+        SUPPORTED_PLAIN_CONTENT_TYPE = (
+            'text/xml', 'application/xml',
+        )
+        SUPPORTED_COMPESSES_CONTENT_TYPE = (
+            'application/octet-stream', 'application/x-gzip',
+        )
+        resp = requests.get(url)
+        if resp.headers['content-type'].lower() in SUPPORTED_PLAIN_CONTENT_TYPE:
+            return resp.content
+        elif resp.headers['content-type'].lower() in SUPPORTED_COMPESSES_CONTENT_TYPE:
+            return GzipFile(fileobj=StringIO(resp.content)).read()
+
+    def _parse_sitemap(self, sitemap):
+        ''' parse sitemap 
+        and return the list of (loc, lastmod, priority)'''
+        print len(sitemap)
+
+    def parse(self):
+        ''' parse sitemap, if there's more than one sitemap url, the data will be merged '''        
+        for url in self._sitemap_urls:
+            content = self._parse_sitemap(self._get(url))
+            print content
 
 class WebsiteInfo(object):
     ''' website information '''    
@@ -141,6 +184,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='website info extraction')
     parser.add_argument('-u', '--url', help='website url')
+    parser.add_argument('-s', '--sitemap', help='get sitemap content')
     
     args = parser.parse_args()
     
@@ -148,6 +192,9 @@ if __name__ == '__main__':
         wsinfo_process = WebsiteInfo(args.url)
         wsinfo_process.run()
         wsinfo_process.report()
+    elif args.sitemap:
+        sitemap_parser = SitemapParser(args.sitemap)
+        sitemap_parser.parse()
     else:
         parser.print_help()
 
