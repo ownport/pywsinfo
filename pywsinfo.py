@@ -3,7 +3,6 @@
 #   Website info gathering
 #
 
-# TODO add test server
 # TODO change default user agent
 # TODO collect WHOIS information
 # TODO extract meta information from homepage (head, meta)
