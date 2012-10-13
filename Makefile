@@ -6,6 +6,7 @@ test-unittest:
 	@ echo '***************************'
 	# python tests/test_pywsinfo.py
 	python tests/test_utils.py
+	python tests/test_sitemap_parser.py
 
 test-doctest:
 	@ echo '***************************'
@@ -26,4 +27,6 @@ todo:
 
 graph:
 	@ dot -T png docs/pywsinfo.gv -o docs/pywsinfo.png && eog docs/pywsinfo.png
-	
+
+test-server-upgrade:
+	@ wget "https://raw.github.com/defnull/bottle/master/bottle.py" --no-check-certificate -O tests/packages/bottle.py	
