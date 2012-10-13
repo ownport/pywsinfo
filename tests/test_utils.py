@@ -32,7 +32,6 @@ class WebSiteUtilsTests(unittest.TestCase):
                 {'source_url': 'http://localhost:8080', 'host': 'localhost'}
         )
 
-
     def test_nsloopup(self):
         
         self.assertGreater(len(pywsinfo.nslookup('google.com')), 1)        

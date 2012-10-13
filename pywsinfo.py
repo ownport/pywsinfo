@@ -11,6 +11,7 @@
 # TODO add choice to select different report format (text, json, html) about website
 # TODO read robots.txt from string
 
+
 __author__  = 'Andrey Usov <https://github.com/ownport/pywsinfo>'
 __version__ = '0.1'
 
@@ -49,6 +50,9 @@ def nslookup(host):
 def parse_html_head(content):
     ''' parse HTML head, extract keywords & description '''
     
+    # TODO extract links to RSS/Atom feeds
+    # <link rel="alternate" type="application/rss+xml"  href="http://www.example.com/rss.xml" title="Example RSS Feed">
+    
     result = dict()
     
     content = content.replace('\r', '')
@@ -64,8 +68,10 @@ def parse_html_head(content):
     for meta in metas:
         meta_dict = dict(re.findall(r'(\w+)\s*=\s*"(.+?)"', meta, re.I))
         if 'name' in meta_dict and 'content' in meta_dict:
+            # keywords
             if meta_dict['name'].lower() == 'keywords':
                 result['keywords'] = [c.strip() for c in meta_dict['content'].split(',')]
+            # description
             if meta_dict['name'].lower() == 'description':
                 result['description'] = meta_dict['content']
     return result
@@ -98,11 +104,14 @@ class SitemapParser(object):
             return resp.content
         elif resp.headers['content-type'].lower() in SUPPORTED_COMPESSES_CONTENT_TYPE:
             return GzipFile(fileobj=StringIO(resp.content)).read()
+        return ''
 
     def _parse_sitemap(self, sitemap):
         ''' parse sitemap 
         and return the list of (loc, lastmod, priority)'''
-        print len(sitemap)
+        sitemap = sitemap.replace('\r','')
+        sitemap = sitemap.replace('\n','')
+        return sitemap
 
     def parse(self):
         ''' parse sitemap, if there's more than one sitemap url, the data will be merged '''        
@@ -174,6 +183,7 @@ class WebsiteInfo(object):
             
     
         # latest update datetime
+        # TODO change format datetime to 'YYYY-mm-DDTHH:MM:SSZ'
         self._details['last_update'] = str(datetime.datetime.now())
     
     def report(self):

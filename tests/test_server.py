@@ -39,14 +39,22 @@ def get_robotstxt():
 def get_robotstxt():
     return bottle.static_file('robots.txt', root=STATIC_FILES_DIR)
 
+@bottle.get('/sitemap.xml')
+def get_sitemap_xml():
+    return bottle.static_file('sitemap.xml', root=STATIC_FILES_DIR, mimetype="application/xml")
+
+@bottle.get('/sitemap.xml.gz')
+def get_sitemap_xml_gz():
+    return bottle.static_file('sitemap.xml.gz', root=STATIC_FILES_DIR, mimetype="application/x-gzip")
+
 # Process to run
-class BottleProcess(pyservice.Process):
+class PywsinfoTestServer(pyservice.Process):
 
     pidfile = os.path.join(os.getcwd(), 'tests/run/test_server.pid')
     logfile = os.path.join(os.getcwd(), 'tests/log/test_server.log')
 
     def __init__(self):
-        super(BottleProcess, self).__init__()
+        super(PywsinfoTestServer, self).__init__()
         
         from BaseHTTPServer import BaseHTTPRequestHandler
         BaseHTTPRequestHandler.log_message = log_message
@@ -59,6 +67,6 @@ class BottleProcess(pyservice.Process):
 if __name__ == '__main__':
 
     if len(sys.argv) == 2 and sys.argv[1] in 'start stop restart status'.split():
-        pyservice.service('test_server.BottleProcess', sys.argv[1])
+        pyservice.service('test_server.PywsinfoTestServer', sys.argv[1])
     else:
-        print 'usage: bottled <start,stop,restart,status>'
+        print 'usage: PywsinfoTestServer <start,stop,restart,status>'
