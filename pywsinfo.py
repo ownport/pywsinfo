@@ -9,7 +9,7 @@
 # TODO add choice to select different report format (text, json, html) about website
 # TODO read robots.txt from string
 # TODO add sitemap-image support (http://support.google.com/webmasters/bin/answer.py?hl=en&answer=178636&topic=20986&ctx=topic)
-
+# TODO add sitemap-vide support ({http://www.google.com/schemas/sitemap-video/1.0}video)
 
 __author__  = 'Andrey Usov <https://github.com/ownport/pywsinfo>'
 __version__ = '0.1'
@@ -30,10 +30,14 @@ except ImportError:
     import xml.etree.ElementTree as xml_parser
 
 # default setting for python-requests
-REQUESTS_DEFAULTS = {}
-
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) pywsinfo/{}'.format(__version__)
 requests.defaults.defaults['base_headers']['User-Agent'] = USER_AGENT
+
+NAMESPACES = (
+    '{http://www.google.com/schemas/sitemap/0.84}',
+    '{http://www.sitemaps.org/schemas/sitemap/0.9}',
+)
+
 
 def parse_url(url):  
     ''' parse website url, remove path if exists '''
@@ -69,7 +73,7 @@ def parse_html_head(content):
     # extract title information
     title = ''.join(re.findall(r'<title>(.+?)</title>', content, re.I))
     if title:
-        result['title'] = title
+        result['title'] = title.strip()
     # select meta information: keywords and description
     metas = re.findall(r'<meta(.+?)[/]?>', head, re.I)
     for meta in metas:
@@ -102,7 +106,7 @@ class SitemapParser(object):
     @staticmethod
     def _plain_tag(tag):
         ''' remove namespaces and returns tag '''
-        NAMESPACES = ('{http://www.sitemaps.org/schemas/sitemap/0.9}',)
+
         for namespace in NAMESPACES:
             if tag.find(namespace) >= 0:
                 return tag.replace(namespace,'')
@@ -170,7 +174,6 @@ class SitemapParser(object):
                 sitemap_url = self._sitemap_urls.pop()
             except IndexError:
                 break
-            print sitemap_url
             sitemap = self._get(sitemap_url)
             if sitemap:
                 urls.extend(self._parse_sitemap(sitemap))
@@ -238,8 +241,7 @@ class WebsiteInfo(object):
             resp = self._make_request('HEAD', sitemaps_url) 
             if resp['status_code'] == 200:
                 self._details['sitemaps'] = sitemaps_url
-            
-    
+                
         # latest update datetime
         # TODO change format datetime to 'YYYY-mm-DDTHH:MM:SSZ'
         self._details['last_update'] = str(datetime.datetime.now())
@@ -259,9 +261,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.url:
-        wsinfo_process = WebsiteInfo(args.url)
-        wsinfo_process.run()
-        wsinfo_process.report()
+        wsinfo = WebsiteInfo(args.url)
+        wsinfo.run()
+        wsinfo.report()
     elif args.sitemap:
         sitemap_parser = SitemapParser(args.sitemap)
         sitemap_parser.parse()
