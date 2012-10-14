@@ -4,9 +4,11 @@ test-unittest:
 	@ echo '***************************'
 	@ echo '*       Unittests         *'
 	@ echo '***************************'
-	python tests/test_utils.py
-	python tests/test_pywsinfo.py
-	python tests/test_sitemap_parser.py
+	@ coverage -e
+	@ coverage -x tests/test_utils.py
+	@ coverage -x tests/test_pywsinfo.py
+	@ coverage -x tests/test_sitemap_parser.py
+	@ coverage -rm pywsinfo.py
 
 test-doctest:
 	@ echo '***************************'
