@@ -105,6 +105,9 @@ def parse_html_head(content):
     
     return result
 
+# -----------------------------------------------
+#   SitemapParser
+# -----------------------------------------------
 class SitemapParser(object):
     
     def __init__(self, sitemap, debug=False):
@@ -158,20 +161,17 @@ class SitemapParser(object):
             - changefreq (optional)
             - priority (optional)'''
             
-        urls = list()
         for url in tree:
             url = dict([(self._plain_tag(param.tag), param.text) for param in url])
-            urls.append(url)
-        return urls
+            yield url
 
     def _parse_sitemap_index(self, tree):
         ''' parse sitemap if there's sitemapindex, 
         returns the list of url to sitemaps '''
-        urls = list()
+
         for sitemap in tree:
             url = dict([(self._plain_tag(param.tag), param.text) for param in sitemap])
-            urls.append(url['loc'])
-        return urls
+            yield url['loc']
 
     def _parse_sitemap(self, sitemap):
         ''' parse sitemap 
@@ -198,12 +198,18 @@ class SitemapParser(object):
                 break
             sitemap = self._get(sitemap_url)
             if sitemap:
-                self._urls.extend(self._parse_sitemap(sitemap))
+                # self._urls.extend(self._parse_sitemap(sitemap))
+                # print self._parse_sitemap(sitemap)
+                for url in self._parse_sitemap(sitemap):
+                    print url['loc']
 
     def report(self):
         ''' report  '''
         pprint.pprint(self._urls)
 
+# -----------------------------------------------
+#   WebsiteInfo
+# -----------------------------------------------
 class WebsiteInfo(object):
     ''' website information '''    
     
