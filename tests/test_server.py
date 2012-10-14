@@ -47,6 +47,18 @@ def get_sitemap_xml():
 def get_sitemap_xml_gz():
     return bottle.static_file('sitemap.xml.gz', root=STATIC_FILES_DIR, mimetype="application/x-gzip")
 
+@bottle.get('/sitemap1.xml.gz')
+def get_sitemap_xml_gz():
+    return bottle.static_file('sitemap1.xml.gz', root=STATIC_FILES_DIR, mimetype="application/x-gzip")
+
+@bottle.get('/sitemap2.xml.gz')
+def get_sitemap_xml_gz():
+    return bottle.static_file('sitemap2.xml.gz', root=STATIC_FILES_DIR, mimetype="application/x-gzip")
+
+@bottle.get('/sitemap_index.xml')
+def get_sitemap_xml_gz():
+    return bottle.static_file('sitemap_index.xml', root=STATIC_FILES_DIR, mimetype="application/xml")
+
 # Process to run
 class PywsinfoTestServer(pyservice.Process):
 

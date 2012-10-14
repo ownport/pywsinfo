@@ -5,11 +5,10 @@
 
 # TODO change default user agent
 # TODO collect WHOIS information
-# TODO extract meta information from homepage (head, meta)
-# TODO add sitemap.xml support
 # TODO add choice to select different report types about website
 # TODO add choice to select different report format (text, json, html) about website
 # TODO read robots.txt from string
+# TODO add sitemap-image support (http://support.google.com/webmasters/bin/answer.py?hl=en&answer=178636&topic=20986&ctx=topic)
 
 
 __author__  = 'Andrey Usov <https://github.com/ownport/pywsinfo>'
@@ -25,8 +24,16 @@ import datetime
 from gzip import GzipFile 
 from cStringIO import StringIO
 
+try:
+    import xml.etree.cElementTree as xml_parser
+except ImportError:
+    import xml.etree.ElementTree as xml_parser
+
 # default setting for python-requests
 REQUESTS_DEFAULTS = {}
+
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) pywsinfo/{}'.format(__version__)
+requests.defaults.defaults['base_headers']['User-Agent'] = USER_AGENT
 
 def parse_url(url):  
     ''' parse website url, remove path if exists '''
@@ -74,6 +81,7 @@ def parse_html_head(content):
             # description
             if meta_dict['name'].lower() == 'description':
                 result['description'] = meta_dict['content']
+    
     return result
 
 class SitemapParser(object):
@@ -91,6 +99,15 @@ class SitemapParser(object):
         else:
             raise RuntimeError('Unknow sitemap type: {}'.format(type(sitemap)))
 
+    @staticmethod
+    def _plain_tag(tag):
+        ''' remove namespaces and returns tag '''
+        NAMESPACES = ('{http://www.sitemaps.org/schemas/sitemap/0.9}',)
+        for namespace in NAMESPACES:
+            if tag.find(namespace) >= 0:
+                return tag.replace(namespace,'')
+        return tag
+
     def _get(self, url):
         ''' get sitemap, if it compressed -> decompress'''
         SUPPORTED_PLAIN_CONTENT_TYPE = (
@@ -100,24 +117,64 @@ class SitemapParser(object):
             'application/octet-stream', 'application/x-gzip',
         )
         resp = requests.get(url)
-        if resp.headers['content-type'].lower() in SUPPORTED_PLAIN_CONTENT_TYPE:
-            return resp.content
-        elif resp.headers['content-type'].lower() in SUPPORTED_COMPESSES_CONTENT_TYPE:
-            return GzipFile(fileobj=StringIO(resp.content)).read()
-        return ''
+        if resp.status_code == 200:
+            if resp.headers['content-type'].lower() in SUPPORTED_PLAIN_CONTENT_TYPE:
+                return resp.content
+            elif resp.headers['content-type'].lower() in SUPPORTED_COMPESSES_CONTENT_TYPE:
+                return GzipFile(fileobj=StringIO(resp.content)).read()
+        return None
+
+    def _parse_urlset(self, tree):
+        ''' parse sitemap if there's urlset, 
+        returns the list of url details:
+            - loc (required)
+            - lastmod (optional)
+            - changefreq (optional)
+            - priority (optional)'''
+            
+        urls = list()
+        for url in tree:
+            url = dict([(self._plain_tag(param.tag), param.text) for param in url])
+            urls.append(url)
+        return urls
+
+    def _parse_sitemap_index(self, tree):
+        ''' parse sitemap if there's sitemapindex, 
+        returns the list of url to sitemaps '''
+        urls = list()
+        for sitemap in tree:
+            url = dict([(self._plain_tag(param.tag), param.text) for param in sitemap])
+            urls.append(url['loc'])
+        return urls
 
     def _parse_sitemap(self, sitemap):
         ''' parse sitemap 
         and return the list of (loc, lastmod, priority)'''
-        sitemap = sitemap.replace('\r','')
-        sitemap = sitemap.replace('\n','')
-        return sitemap
+        
+        urls = list()
+        root = xml_parser.fromstring(sitemap)
+        
+        if self._plain_tag(root.tag) == 'sitemapindex':
+            self._sitemap_urls.extend(self._parse_sitemap_index(root))
+            
+        if self._plain_tag(root.tag) == 'urlset':
+            urls.extend(self._parse_urlset(root))
+            
+        return urls
 
     def parse(self):
         ''' parse sitemap, if there's more than one sitemap url, the data will be merged '''        
-        for url in self._sitemap_urls:
-            content = self._parse_sitemap(self._get(url))
-            print content
+        urls = list()
+        while True:
+            try:
+                sitemap_url = self._sitemap_urls.pop()
+            except IndexError:
+                break
+            print sitemap_url
+            sitemap = self._get(sitemap_url)
+            if sitemap:
+                urls.extend(self._parse_sitemap(sitemap))
+        pprint.pprint(urls)
 
 class WebsiteInfo(object):
     ''' website information '''    
@@ -167,7 +224,8 @@ class WebsiteInfo(object):
             resp = self._make_request('GET', robots_url)
             if resp['status_code'] == 200 and 'content' in resp:
                 self._details['robots.txt'] = resp['content']
-                # TODO extract link to sitemap.xml
+                
+                # extract link to sitemap.xml
                 for line in self._details['robots.txt'].split('\n'):
                     if line.startswith('Sitemap'):
                         if 'sitemaps' not in self._details:
