@@ -43,6 +43,14 @@ def get_robotstxt():
 def get_sitemap_xml():
     return bottle.static_file('sitemap.xml', root=STATIC_FILES_DIR, mimetype="application/xml")
 
+@bottle.get('/sitemap.text.xml')
+def get_sitemap_xml():
+    return bottle.static_file('sitemap.xml', root=STATIC_FILES_DIR, mimetype="text/xml")
+
+@bottle.get('/sitemap.text.utf-8.xml')
+def get_sitemap_xml():
+    return bottle.static_file('sitemap.xml', root=STATIC_FILES_DIR, mimetype="text/xml; charset=utf-8")
+
 @bottle.get('/sitemap.xml.gz')
 def get_sitemap_xml_gz():
     return bottle.static_file('sitemap.xml.gz', root=STATIC_FILES_DIR, mimetype="application/x-gzip")

@@ -3,7 +3,6 @@
 #   Website info gathering
 #
 
-# TODO change default user agent
 # TODO collect WHOIS information
 # TODO add choice to select different report types about website
 # TODO add choice to select different report format (text, json, html) about website
@@ -97,6 +96,7 @@ class SitemapParser(object):
         sitemap can be as one url or as list of urls to sitemaps
         '''
         self._debug = debug
+        self._urls = list()
         self._sitemap_urls = list()
         if isinstance(sitemap, (str,unicode)):
             self._sitemap_urls.append(sitemap)
@@ -173,7 +173,7 @@ class SitemapParser(object):
 
     def parse(self):
         ''' parse sitemap, if there's more than one sitemap url, the data will be merged '''        
-        urls = list()
+
         while True:
             try:
                 sitemap_url = self._sitemap_urls.pop()
@@ -181,8 +181,11 @@ class SitemapParser(object):
                 break
             sitemap = self._get(sitemap_url)
             if sitemap:
-                urls.extend(self._parse_sitemap(sitemap))
-        pprint.pprint(urls)
+                self._urls.extend(self._parse_sitemap(sitemap))
+
+    def report(self):
+        ''' report  '''
+        pprint.pprint(self._urls)
 
 class WebsiteInfo(object):
     ''' website information '''    
