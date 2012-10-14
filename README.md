@@ -27,3 +27,6 @@ Sitemaps parsers
 
 - [andreisavu/python-sitemap](https://github.com/andreisavu/python-sitemap)
 - [varelaz / varela-python-sitemap-parser](https://github.com/varelaz/varela-python-sitemap-parser)
+- [sitemaps.org](http://www.sitemaps.org/protocol.html)
+- [Wikipedia:Sitemaps](http://en.wikipedia.org/wiki/Sitemaps)
+
