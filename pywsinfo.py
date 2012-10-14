@@ -6,7 +6,6 @@
 # TODO collect WHOIS information
 # TODO add choice to select different report types about website
 # TODO add choice to select different report format (text, json, html) about website
-# TODO read robots.txt from string
 # TODO add sitemap-image support (http://support.google.com/webmasters/bin/answer.py?hl=en&answer=178636&topic=20986&ctx=topic)
 # TODO add sitemap-vide support ({http://www.google.com/schemas/sitemap-video/1.0}video)
 
@@ -58,11 +57,29 @@ def nslookup(host):
     except:
         return []
 
+# Entity escape
+# 
+# Character	            Escape Code
+# ---------------------+-----------
+# Ampersand(&)	        &amp;
+# Single Quote (')      &apos;
+# Double Quote (")	    &quot;
+# Greater Than (>)	    &gt;
+# Less Than	(<)	        &lt;
+
 def parse_html_head(content):
     ''' parse HTML head, extract keywords & description '''
     
     # TODO extract links to RSS/Atom feeds
     # <link rel="alternate" type="application/rss+xml"  href="http://www.example.com/rss.xml" title="Example RSS Feed">
+    
+    # TODO extract info about generators
+    # <meta name="generator" content="WordPress 3.4.2" />
+    
+    # TODO links to RSS/Atom
+    # <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="..." />
+    # <link rel="alternate" type="text/xml" title="RSS .92" href="..." />
+    # <link rel="alternate" type="application/atom+xml" title="Atom 0.3" href="..." />
     
     result = dict()
     
