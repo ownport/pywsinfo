@@ -15,6 +15,7 @@ __author__  = 'Andrey Usov <https://github.com/ownport/pywsinfo>'
 __version__ = '0.1'
 
 import re
+import sys
 import socket
 import pprint
 import requests
@@ -90,11 +91,12 @@ def parse_html_head(content):
 
 class SitemapParser(object):
     
-    def __init__(self, sitemap):
+    def __init__(self, sitemap, debug=False):
         ''' init 
         
         sitemap can be as one url or as list of urls to sitemaps
         '''
+        self._debug = debug
         self._sitemap_urls = list()
         if isinstance(sitemap, (str,unicode)):
             self._sitemap_urls.append(sitemap)
@@ -122,9 +124,12 @@ class SitemapParser(object):
         )
         resp = requests.get(url)
         if resp.status_code == 200:
-            if resp.headers['content-type'].lower() in SUPPORTED_PLAIN_CONTENT_TYPE:
+            content_type = resp.headers['content-type'].lower()
+            if ';' in content_type:
+                content_type = content_type.split(';')[0]
+            if content_type in SUPPORTED_PLAIN_CONTENT_TYPE:
                 return resp.content
-            elif resp.headers['content-type'].lower() in SUPPORTED_COMPESSES_CONTENT_TYPE:
+            elif content_type in SUPPORTED_COMPESSES_CONTENT_TYPE:
                 return GzipFile(fileobj=StringIO(resp.content)).read()
         return None
 
@@ -182,7 +187,8 @@ class SitemapParser(object):
 class WebsiteInfo(object):
     ''' website information '''    
     
-    def __init__(self, website_url):    
+    def __init__(self, website_url, debug=False):    
+        self._debug = debug
         self._url = website_url
         self._homepage_content = None
         self._details = parse_url(self._url)
@@ -257,15 +263,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='website info extraction')
     parser.add_argument('-u', '--url', help='website url')
     parser.add_argument('-s', '--sitemap', help='get sitemap content')
+    parser.add_argument('-d', '--debug', action='store_true', help='activate debug')
     
     args = parser.parse_args()
     
     if args.url:
-        wsinfo = WebsiteInfo(args.url)
+        wsinfo = WebsiteInfo(args.url, debug=args.debug)
         wsinfo.run()
         wsinfo.report()
     elif args.sitemap:
-        sitemap_parser = SitemapParser(args.sitemap)
+        sitemap_parser = SitemapParser(args.sitemap, debug=args.debug)
         sitemap_parser.parse()
     else:
         parser.print_help()
