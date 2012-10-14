@@ -34,6 +34,7 @@ requests.defaults.defaults['base_headers']['User-Agent'] = USER_AGENT
 
 NAMESPACES = (
     '{http://www.google.com/schemas/sitemap/0.84}',
+    '{http://www.google.com/schemas/sitemap/0.9}',
     '{http://www.sitemaps.org/schemas/sitemap/0.9}',
 )
 
@@ -139,7 +140,7 @@ class SitemapParser(object):
         SUPPORTED_PLAIN_CONTENT_TYPE = (
             'text/xml', 'application/xml',
         )
-        SUPPORTED_COMPESSES_CONTENT_TYPE = (
+        SUPPORTED_COMPESSED_CONTENT_TYPE = (
             'application/octet-stream', 'application/x-gzip',
         )
         resp = requests.get(url)
@@ -149,7 +150,7 @@ class SitemapParser(object):
                 content_type = content_type.split(';')[0]
             if content_type in SUPPORTED_PLAIN_CONTENT_TYPE:
                 return resp.content
-            elif content_type in SUPPORTED_COMPESSES_CONTENT_TYPE:
+            elif content_type in SUPPORTED_COMPESSED_CONTENT_TYPE:
                 return GzipFile(fileobj=StringIO(resp.content)).read()
         return None
 
@@ -177,17 +178,15 @@ class SitemapParser(object):
         ''' parse sitemap 
         and return the list of (loc, lastmod, priority)'''
         
-        urls = list()
         root = xml_parser.fromstring(sitemap)
         
         if self._plain_tag(root.tag) == 'sitemapindex':
             self._sitemap_urls.extend(self._parse_sitemap_index(root))
             
         if self._plain_tag(root.tag) == 'urlset':
-            urls.extend(self._parse_urlset(root))
-            
-        return urls
-
+            for url in self._parse_urlset(root):
+                yield url
+                    
     def parse(self):
         ''' parse sitemap, if there's more than one sitemap url, the data will be merged '''        
 
