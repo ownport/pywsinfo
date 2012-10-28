@@ -152,15 +152,17 @@ class WebsiteInfo(object):
         self._details['ip_addreses'] = nslookup(self._details['host'])
 
         # first request to web site. Try to detect 
-        if len(self._details['ip_addreses']) > 0:
-            resp = self._make_request('GET', self._details['source_url'])
-            for k in resp.keys():
-                if k == 'content':
-                    head_params = parse_html_head(resp[k])
-                    for k in head_params:
-                        self._details[k] = head_params[k]
-                else:
-                    self._details[k] = resp[k]
+        if len(self._details['ip_addreses']) == 0:
+            raise RuntimeError('Cannot resolve IP addresses for host')
+            
+        resp = self._make_request('GET', self._details['source_url'])
+        for k in resp.keys():
+            if k == 'content':
+                head_params = parse_html_head(resp[k])
+                for k in head_params:
+                    self._details[k] = head_params[k]
+            else:
+                self._details[k] = resp[k]
 
         # check robots.txt
         if self._details.get('status_code') == 200:

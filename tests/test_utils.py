@@ -1,4 +1,7 @@
-import socket
+import sys
+if '' not in sys.path:
+    sys.path.append('')
+
 import pywsinfo
 import unittest
 
