@@ -132,7 +132,7 @@ class WebsiteInfo(object):
         if 'powered-by' in resp.headers:
             result['powered-by'] = resp.headers['x-powered-by']
         
-        result['content-type'] = resp.headers.get('content-type', None)
+        result['content-type'] = resp.headers.get('content-type', '')
 
         if resp.content:
             result['content'] = resp.content
