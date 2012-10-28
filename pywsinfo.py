@@ -191,6 +191,10 @@ class WebsiteInfo(object):
         # latest update datetime
         # TODO change format datetime to 'YYYY-mm-DDTHH:MM:SSZ'
         self._details['last_update'] = str(datetime.datetime.now())
+
+    def details(self):
+        ''' return details '''
+        return self._details
     
     def report(self, output=None):
         ''' website report 
