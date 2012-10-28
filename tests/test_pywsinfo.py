@@ -5,7 +5,7 @@ class WebSiteInfoTests(unittest.TestCase):
     
     def test_main(self):
         wsinfo = pywsinfo.WebsiteInfo('http://localhost:8080')
-        wsinfo.run()
+        wsinfo.gather()
         
                 
 if __name__ == '__main__':

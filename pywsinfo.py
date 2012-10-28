@@ -37,7 +37,10 @@ NAMESPACES = (
     '{http://www.sitemaps.org/schemas/sitemap/0.9}',
 )
 
-
+def validate_url(url):
+    ''' returns True if url validated '''
+    pass
+ 
 def parse_url(url):  
     ''' parse website url, remove path if exists '''
     url_parts = urlparse.urlparse(url)
@@ -134,6 +137,14 @@ class WebsiteInfo(object):
 
         return result
 
+    def _check_robots_txt(self):
+        ''' robots.txt '''
+        pass
+
+    def _check_sitemap(self):
+        ''' sitemap.xml '''
+        pass
+        
     def gather(self):
         ''' run website info retrieval '''
         
@@ -179,8 +190,17 @@ class WebsiteInfo(object):
         # TODO change format datetime to 'YYYY-mm-DDTHH:MM:SSZ'
         self._details['last_update'] = str(datetime.datetime.now())
     
-    def report(self):
-        ''' website report '''
+    def report(self, output=None):
+        ''' website report 
+        
+        supported formats, defined by output: 
+            None                print result to standard output
+            <filename>.json     save report to json file
+            <filename>.kvlite   save report to kvlite database. If the record exists, 
+                                update information   
+        '''
+        # TODO json format
+        # TODO kvlite format
         import pprint        
         pprint.pprint(self._details)
 

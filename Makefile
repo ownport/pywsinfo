@@ -7,7 +7,6 @@ test-unittest:
 	@ coverage -e
 	@ coverage -x tests/test_utils.py
 	@ coverage -x tests/test_pywsinfo.py
-	@ coverage -x tests/test_sitemap_parser.py
 	@ coverage -rm pywsinfo.py
 
 test-doctest:
