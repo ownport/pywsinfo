@@ -131,6 +131,8 @@ class WebsiteInfo(object):
             result['server'] = resp.headers['server']
         if 'powered-by' in resp.headers:
             result['powered-by'] = resp.headers['x-powered-by']
+        
+        result['content-type'] = resp.headers.get('content-type', None)
 
         if resp.content:
             result['content'] = resp.content
@@ -161,6 +163,8 @@ class WebsiteInfo(object):
                 head_params = parse_html_head(resp[k])
                 for k in head_params:
                     self._details[k] = head_params[k]
+            elif k == 'content-type':
+                pass
             else:
                 self._details[k] = resp[k]
 
@@ -168,7 +172,11 @@ class WebsiteInfo(object):
         if self._details.get('status_code') == 200:
             robots_url = urlparse.urljoin(self._details['final_url'],'/robots.txt')
             resp = self._make_request('GET', robots_url)
-            if resp['status_code'] == 200 and 'content' in resp:
+            
+            if (resp['status_code'] == 200 and \
+                resp['content-type'].startswith('text/plain')  and \
+                'content' in resp):
+                
                 self._details['robots.txt'] = resp['content']
                 
                 # extract link to sitemap.xml
