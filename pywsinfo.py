@@ -123,7 +123,7 @@ class WebsiteInfo(object):
     def _make_request(self, method, url):
         ''' make request to website '''        
         result = dict()
-        resp = requests.request(method, url)
+        resp = requests.request(method, url, timeout=60)
         
         result['final_url'] = resp.url
         result['status_code'] = resp.status_code
